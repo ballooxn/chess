@@ -7,10 +7,11 @@ class Game
   include Display
   include PossibleMoves
 
-  LETTER_TO_NUMBER = %w[a b c d e f g h]
-  LETTER_TO_PIECE = { "p" => "pawn", "n" => "knight", "k" => "king", "b" => "bishop", "q" => "queen", "r" => "rook" }
+  LETTER_TO_NUMBER = %w[a b c d e f g h].freeze
+  LETTER_TO_PIECE = { "p" => "pawn", "n" => "knight", "k" => "king", "b" => "bishop", "q" => "queen",
+                      "r" => "rook" }.freeze
   PIECE_MOVES = { "pawn" => { "white" => WHITE_PAWN_MOVES, "black" => BLACK_PAWN_MOVES }, "knight" => KNIGHT_MOVES, "bishop" => BISHOP_MOVES,
-                  "king" => KING_MOVES, "queen" => QUEEN_MOVES, "rook" => ROOK_MOVES }
+                  "king" => KING_MOVES, "queen" => QUEEN_MOVES, "rook" => ROOK_MOVES }.freeze
 
   def initialize(board = Array.new(8) { Array.new(8, "_") })
     @board = board
@@ -49,11 +50,14 @@ class Game
     # The first part of input is the piece, second and third is position to move to.
     Display.player_input(player.color)
     input = nil
-    until valid_input?(input, player) && possible_move(input, player)
+    valid_move = false
+    until valid_move
 
       input = gets.chomp.split("", 3)
       input[1] = LETTER_TO_NUMBER.index(input[1].downcase) if input[1].match?(/[a-h]/)
       input[2] = input[2].to_i
+      next unless valid_input?(input, player)
+
       piece_to_move = possible_move(input, player)
       return [piece_to_move, [input[1], input[2]]] if piece_to_move
     end
@@ -79,8 +83,9 @@ class Game
 
   def possible_move(input, player)
     piece_name = LETTER_TO_PIECE[input[0]]
-    moves = PIECE_MOVES[piece_name]
+    moves = piece_name == "pawn" ? PIECE_MOVES[piece_name][player.color] : PIECE_MOVES[piece_name]
     target = [input[1], input[2]]
+    p moves
 
     @pieces.each do |piece|
       next if piece.color != player.color && piece.piece_name != piece_name
