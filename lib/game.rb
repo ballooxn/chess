@@ -31,6 +31,7 @@ class Game
   def game_loop
     curr_plr = @player2
     until @winner
+      Display.display_board(@board)
       curr_plr = curr_plr == @player2 ? @player1 : @player2
 
       input = player_input(curr_plr)
@@ -46,18 +47,20 @@ class Game
     # in the future, allow player to input just 'd2' to move a pawn instead of 'pd2'
 
     # The first part of input is the piece, second and third is position to move to.
-    # Display.player_input(player.color)
+    Display.player_input(player.color)
     input = nil
-    until valid_input?(input, player) && possible_move?(input, player)
+    until valid_input?(input, player) && possible_move(input, player)
+
       input = gets.chomp.split("", 3)
       input[1] = LETTER_TO_NUMBER.index(input[1].downcase) if input[1].match?(/[a-h]/)
       input[2] = input[2].to_i
       piece_to_move = possible_move(input, player)
-      return [[piece_to_move], [input[1], input[2]]] if piece_to_move
+      return [piece_to_move, [input[1], input[2]]] if piece_to_move
     end
   end
 
   def valid_input?(input, player)
+    # add error handling in the future (print out the issue)
     return false if input.nil? || !input.is_a?(Array)
 
     return false unless input[0].match?(/[rnbqkpRNBQKP]/) && input[0].length == 1
@@ -75,15 +78,12 @@ class Game
   end
 
   def possible_move(input, player)
-    # Get the array of moves using the PIECE_MOVES hash and input[0]
-    # Loop through the array of pieces, checking if the piece can possibly reach that point
-    # Only check pieces of the player's color.
     piece_name = LETTER_TO_PIECE[input[0]]
     moves = PIECE_MOVES[piece_name]
     target = [input[1], input[2]]
 
     @pieces.each do |piece|
-      next if piece.color == player.color || piece.piece_name != piece_name
+      next if piece.color != player.color && piece.piece_name != piece_name
 
       x = piece.pos[0]
       y = piece.pos[1]
@@ -139,7 +139,5 @@ class Game
       @board[1][i] = create_piece("white", "pawn", [1, i])
       @board[6][i] = create_piece("black", "pawn", [6, i])
     end
-
-    p @pieces
   end
 end
