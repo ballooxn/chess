@@ -32,7 +32,13 @@ class Game
     curr_plr = @player2
     until @winner
       curr_plr = curr_plr == @player2 ? @player1 : @player2
-      player_input(curr_plr)
+
+      input = player_input(curr_plr)
+      piece_to_move = input[0]
+      target = input[1]
+
+      move_piece(piece_to_move, target)
+
     end
   end
 
@@ -90,6 +96,16 @@ class Game
   end
 
   def game_over?
+  end
+
+  def move_piece(piece, target)
+    orig_x = piece.pos[0]
+    orig_y = piece.pos[1]
+
+    @board[orig_x][orig_y] = "_"
+    @board[target[0]][target[1]] = piece
+
+    piece.pos = target
   end
 
   private

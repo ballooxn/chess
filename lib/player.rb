@@ -8,16 +8,4 @@ class Player
     @color = color
     @rounds_won = rounds_won
   end
-
-  def choose_color
-    Display.choose_color
-  end
-
-  def player_input
-    Display.player_input(@color)
-    input = nil
-    until valid_input?(input)
-
-    end
-  end
 end
