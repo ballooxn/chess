@@ -96,9 +96,38 @@ class Game
 
       moves.each_with_index do |move, index|
         next if piece_name == "pawn" && @board[target[0]][target[1]] == "_" && [1, 2].include?(index)
-        next if piece_name == "pawn" && piece.times_moved > 0 # rubocop:disable Style/NumericPredicate
+        next if piece_name == "pawn" && piece.times_moved > 0 && index == 0 # rubocop:disable Style/NumericPredicate
+
+        next if moving_over_piece?(move, x, y, piece_name)
 
         return piece if x + move[0] == target[0] && y + move[1] == target[1]
+      end
+    end
+    false
+  end
+
+  def moving_over_piece?(move, piece_x, piece_y, name)
+    move_x = move[0]
+    move_y = move[1]
+    return false if name == "knight"
+
+    if move_x >= 0
+      move_x.times do |_i|
+        piece_x += 1
+        if move_y.positive?
+          piece_y += 1
+          move_y -= 1
+        end
+        return true if @board[piece_x][piece_y] != "_"
+      end
+    else
+      move_y.times do |_i|
+        piece_y += 1
+        if move_x.positive?
+          piece_x += 1
+          move_x -= 1
+        end
+        return true if @board[piece_x][piece_y] != "_"
       end
     end
     false
@@ -115,6 +144,7 @@ class Game
     @board[target[0]][target[1]] = piece
 
     piece.pos = target
+    piece.times_moved += 1
   end
 
   private

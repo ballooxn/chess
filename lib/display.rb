@@ -15,7 +15,7 @@ module Display
   def self.display_board(board)
     puts ""
     board.each_with_index do |row, row_index|
-      print "#{NUMBER_TO_LETTER[row_index]}: "
+      print "#{row_index}: "
       row.each_with_index do |piece, col_index|
         if piece == "_"
           print col_index == 7 ? "| _ |" : "| _ "
@@ -26,7 +26,7 @@ module Display
       end
       puts ""
     end
-    print "     0   1   2   3   4   5   6   7"
+    print "     a   b   c   d   e   f   g   h"
     puts ""
   end
 end
