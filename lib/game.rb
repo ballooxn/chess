@@ -49,11 +49,11 @@ class Game
     valid_move = false
     until valid_move
 
-      input = gets.chomp.split("", 3)
+      input = gets.chomp.downcase.split("", 3)
       # reverse the numbers as the letters should be columns
-      orig_input2 = input[2]
+      original_input2 = input[2]
       input[2] = LETTER_TO_NUMBER.index(input[1].downcase) if input[1].match?(/[a-h]/)
-      input[1] = orig_input2.to_i
+      input[1] = original_input2.to_i
       next unless valid_input?(input, player)
 
       piece_to_move = possible_move(input, player)
@@ -63,10 +63,12 @@ class Game
 
   def valid_input?(input, player)
     # add error handling in the future (print out the issue)
+
     return false if input.nil? || !input.is_a?(Array)
+    # Make sure the letter input is not out of range and was turned into an integer.
     return false if input[2].is_a?(String)
 
-    return false unless input[0].match?(/[rnbqkpRNBQKP]/) && input[0].length == 1
+    return false unless input[0].match?(/[rnbqkp]/) && input[0].length == 1
 
     return false unless input[1].to_s.length == 1 && input[1].to_s.match?(/\d/)
     return false unless input[2].to_s.length == 1 && input[2].to_s.match?(/\d/)
@@ -82,33 +84,45 @@ class Game
 
   def possible_move(input, player)
     piece_name = LETTER_TO_PIECE[input[0]]
+    # Pawns have seperate moves for white or black colors, so we make sure to get the correct color if its a pawn
     moves = piece_name == "pawn" ? PIECE_MOVES[piece_name][player.color] : PIECE_MOVES[piece_name]
+
     target = [input[1], input[2]]
 
     Piece.pieces.each do |piece|
-      next if piece.color != player.color || piece.piece_name != piece_name
+      next if piece.piece_name != piece_name || piece.color != player.color
 
-      x = piece.pos[0]
-      y = piece.pos[1]
-
-      moves.each_with_index do |move, index|
-        # Pawn can only move diagonally to capture another piece.
-        next if piece_name == "pawn" && @board[target[0]][target[1]] == "_" && [1, 2].include?(index)
-        # Pawn cannnot move 2 space unless its the first turn
-        next if piece_name == "pawn" && piece.times_moved > 0 && index == 0 # rubocop:disable Style/NumericPredicate
-
-        next unless (x + move[0]).between?(0, 7) && (y + move[1]).between?(0, 7)
-        next if moving_over_piece?(move, x, y, piece_name, target)
-
-        return piece if x + move[0] == target[0] && y + move[1] == target[1]
-      end
+      return piece if can_move_to_target?(piece, target, moves, piece_name)
     end
+    false
+  end
+
+  def can_move_to_target?(piece, target, moves, piece_name)
+    x = piece.pos[0]
+    y = piece.pos[1]
+
+    moves.each_with_index do |move, index|
+      # Pawn can only move diagonally to capture another piece.
+      next if piece_name == "pawn" && @board[target[0]][target[1]] == "_" && [1, 2].include?(index)
+      # Pawn cannnot move 2 space unless its the first turn
+      next if piece_name == "pawn" && piece.times_moved > 0 && index == 0 # rubocop:disable Style/NumericPredicate
+
+      # Move must stay within the board
+      next unless (x + move[0]).between?(0, 7) && (y + move[1]).between?(0, 7)
+
+      next if moving_over_piece?(move, x, y, piece_name, target)
+
+      return true if x + move[0] == target[0] && y + move[1] == target[1]
+    end
+
     false
   end
 
   def moving_over_piece?(move, curr_x, curr_y, name, target)
     move_x = move[0]
     move_y = move[1]
+
+    # Knights jump over pieces, so we dont check for them
     return false if name == "knight"
 
     if move_x.abs >= 0
@@ -152,10 +166,10 @@ class Game
   end
 
   def move_piece(piece, target)
-    orig_x = piece.pos[0]
-    orig_y = piece.pos[1]
+    original_x = piece.pos[0]
+    original_y = piece.pos[1]
 
-    @board[orig_x][orig_y] = "_"
+    @board[original_x][original_y] = "_"
     @board[target[0]][target[1]] = piece
 
     piece.pos = target
