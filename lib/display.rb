@@ -3,8 +3,6 @@ module Display
                                      "king" => "\u265A", "queen" => "\u265B", "rook" => "\u265C" },
                         "black" => { "pawn" => "\u2659", "knight" => "\u2658", "bishop" => "\u2657",
                                      "king" => "\u2654", "queen" => "\u2655", "rook" => "\u2656" } }.freeze
-  NUMBER_TO_LETTER = { "b" => 1, "c" => 2, "d" => 3, "e" => 4, "f" => 5, "g" => 6,
-                       "h" => 7 }.freeze
   def self.intro
     puts "Welcome to Chess!"
   end
@@ -17,7 +15,7 @@ module Display
   def self.display_board(board)
     puts ""
     board.each_with_index do |row, row_index|
-      print "#{row_index}: "
+      print "#{NUMBER_TO_LETTER[row_index]}: "
       row.each_with_index do |piece, col_index|
         if piece == "_"
           print col_index == 7 ? "| _ |" : "| _ "
@@ -28,7 +26,7 @@ module Display
       end
       puts ""
     end
-    print "     a   b   c   d   e   f   g   h"
+    print "     0   1   2   3   4   5   6   7"
     puts ""
   end
 end
