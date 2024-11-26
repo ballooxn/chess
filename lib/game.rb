@@ -64,9 +64,7 @@ class Game
   def valid_input?(input, player)
     # add error handling in the future (print out the issue)
 
-    return false if input.nil? || !input.is_a?(Array)
-    # Make sure the letter input is not out of range and was turned into an integer.
-    return false if input[2].is_a?(String)
+    return false if input.nil? || !input.is_a?(Array) || input[2].is_a?(String)
 
     return false unless input[0].match?(/[rnbqkp]/) && input[0].length == 1
 
@@ -76,8 +74,8 @@ class Game
     return false unless input[1].between?(0, 7) && input[2].between?(0, 7)
 
     # Check if input is reachable in one turn
-
-    return false if @board[input[1]][input[2]] != "_" && @board[input[1]][input[2]].color == player.color
+    target_piece = @board[input[1]][input[2]]
+    return false if target_piece != "_" && target_piece.color == player.color
 
     true
   end
@@ -90,7 +88,7 @@ class Game
     target = [input[1], input[2]]
 
     Piece.pieces.each do |piece|
-      next if piece.piece_name != piece_name || piece.color != player.color
+      next unless piece.piece_name == piece_name && piece.color == player.color
 
       return piece if can_move_to_target?(piece, target, moves, piece_name)
     end
@@ -108,17 +106,22 @@ class Game
       next if piece_name == "pawn" && piece.times_moved > 0 && index == 0 # rubocop:disable Style/NumericPredicate
 
       # Move must stay within the board
-      next unless (x + move[0]).between?(0, 7) && (y + move[1]).between?(0, 7)
+      new_x = x + move[0]
+      new_y = y + move[1]
+
+      next unless new_x.between?(0, 7) && new_y.between?(0, 7)
 
       next if moving_over_piece?(move, x, y, piece_name, target)
 
-      return true if x + move[0] == target[0] && y + move[1] == target[1]
+      return true if new_x == target[0] && new_y == target[1]
     end
 
     false
   end
 
   def moving_over_piece?(move, curr_x, curr_y, name, target)
+    return false if name == "knight"
+
     move_x = move[0]
     move_y = move[1]
 
