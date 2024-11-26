@@ -95,10 +95,13 @@ class Game
       y = piece.pos[1]
 
       moves.each_with_index do |move, index|
+        # Pawn can only move diagonally to capture another piece.
         next if piece_name == "pawn" && @board[target[0]][target[1]] == "_" && [1, 2].include?(index)
+        # Pawn cannnot move 2 space unless its the first turn
         next if piece_name == "pawn" && piece.times_moved > 0 && index == 0 # rubocop:disable Style/NumericPredicate
 
-        next if moving_over_piece?(move, x, y, piece_name)
+        next unless (x + move[0]).between?(0, 7) && (y + move[1]).between?(0, 7)
+        next if moving_over_piece?(move, x, y, piece_name, target)
 
         return piece if x + move[0] == target[0] && y + move[1] == target[1]
       end
@@ -106,28 +109,40 @@ class Game
     false
   end
 
-  def moving_over_piece?(move, piece_x, piece_y, name)
+  def moving_over_piece?(move, curr_x, curr_y, name, target)
     move_x = move[0]
     move_y = move[1]
     return false if name == "knight"
 
-    if move_x >= 0
-      move_x.times do |_i|
-        piece_x += 1
-        if move_y.positive?
-          piece_y += 1
-          move_y -= 1
+    if move_x.abs >= 0
+      move_x.abs.times do |_i|
+        move_x.positive? ? curr_x += 1 : curr_x -= 1
+        if move_y.abs.positive?
+          if move_y.positive?
+            curr_y += 1
+            move_y -= 1
+          else
+            curr_y -= 1
+            move_y += 1
+          end
         end
-        return true if @board[piece_x][piece_y] != "_"
+
+        return true if @board[curr_x][curr_y] != "_" && target != [curr_x, curr_y]
       end
     else
-      move_y.times do |_i|
-        piece_y += 1
+      move_y.abs.times do |_i|
+        move_y.positive? ? curr_y += 1 : curr_y -= 1
         if move_x.positive?
-          piece_x += 1
-          move_x -= 1
+          if move_y.positive?
+            curr_x += 1
+            move_x -= 1
+          else
+            curr_x -= 1
+            move_x += 1
+          end
         end
-        return true if @board[piece_x][piece_y] != "_"
+
+        return true if @board[curr_x][curr_y] != "_" && target != [curr_x, curr_y]
       end
     end
     false
