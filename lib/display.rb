@@ -2,7 +2,9 @@ module Display
   PIECE_TO_NOTATION = { "white" => { "pawn" => "\u265F", "knight" => "\u265E", "bishop" => "\u265D",
                                      "king" => "\u265A", "queen" => "\u265B", "rook" => "\u265C" },
                         "black" => { "pawn" => "\u2659", "knight" => "\u2658", "bishop" => "\u2657",
-                                     "king" => "\u2654", "queen" => "\u2655", "rook" => "\u2656" } }
+                                     "king" => "\u2654", "queen" => "\u2655", "rook" => "\u2656" } }.freeze
+  NUMBER_TO_LETTER = { "b" => 1, "c" => 2, "d" => 3, "e" => 4, "f" => 5, "g" => 6,
+                       "h" => 7 }.freeze
   def self.intro
     puts "Welcome to Chess!"
   end
