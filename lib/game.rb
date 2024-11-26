@@ -125,40 +125,15 @@ class Game
     move_x = move[0]
     move_y = move[1]
 
-    # Knights jump over pieces, so we dont check for them
-    return false if name == "knight"
+    (1..[move_x.abs, move_y.abs].max).each do |i|
+      new_x = curr_x + (move_x.positive? ? i : -i)
+      new_y = curr_y + (move_y.positive? ? i : -i)
 
-    if move_x.abs >= 0
-      move_x.abs.times do |_i|
-        move_x.positive? ? curr_x += 1 : curr_x -= 1
-        if move_y.abs.positive?
-          if move_y.positive?
-            curr_y += 1
-            move_y -= 1
-          else
-            curr_y -= 1
-            move_y += 1
-          end
-        end
+      break if new_x < 0 || new_x > 7 || new_y < 0 || new_y > 7
 
-        return true if @board[curr_x][curr_y] != "_" && target != [curr_x, curr_y]
-      end
-    else
-      move_y.abs.times do |_i|
-        move_y.positive? ? curr_y += 1 : curr_y -= 1
-        if move_x.positive?
-          if move_y.positive?
-            curr_x += 1
-            move_x -= 1
-          else
-            curr_x -= 1
-            move_x += 1
-          end
-        end
-
-        return true if @board[curr_x][curr_y] != "_" && target != [curr_x, curr_y]
-      end
+      return true if @board[new_x][new_y] != "_" && target != [new_x, new_y]
     end
+
     false
   end
 

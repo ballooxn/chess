@@ -1,5 +1,6 @@
+require_relative "../lib/game"
+
 describe Game do
-  describe "game_loop" do
-    context "goe"
+  describe "#game_loop" do
   end
 end

@@ -18,3 +18,5 @@ Pawn promotion
 End game if stalemate
 
 Make white play from bottom 
+
+Change it to show 1-8
