@@ -36,6 +36,7 @@ class Game
       curr_plr = curr_plr == @player2 ? @player1 : @player2
 
       input = player_input(curr_plr)
+      p input
       piece_to_move = input[0]
       target = input[1]
 
@@ -49,7 +50,6 @@ class Game
 
     # The first part of input is the piece, second and third is position to move to.
     Display.player_input(player.color)
-    input = nil
     valid_move = false
     until valid_move
 
@@ -85,15 +85,17 @@ class Game
     piece_name = LETTER_TO_PIECE[input[0]]
     moves = piece_name == "pawn" ? PIECE_MOVES[piece_name][player.color] : PIECE_MOVES[piece_name]
     target = [input[1], input[2]]
-    p moves
 
     @pieces.each do |piece|
-      next if piece.color != player.color && piece.piece_name != piece_name
+      next if piece.color != player.color || piece.piece_name != piece_name
 
       x = piece.pos[0]
       y = piece.pos[1]
 
-      moves.each do |move|
+      moves.each_with_index do |move, index|
+        next if piece_name == "pawn" && @board[target[0]][target[1]] == "_" && [1, 2].include?(index)
+        next if piece_name == "pawn" && piece.times_moved > 0 # rubocop:disable Style/NumericPredicate
+
         return piece if x + move[0] == target[0] && y + move[1] == target[1]
       end
     end
