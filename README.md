@@ -11,6 +11,8 @@ cant move king into check
 
 End game if over 50 move rule (might not do this)
 
+Castling (long and short)
+
 Pawn promotion
 
 End game if stalemate
