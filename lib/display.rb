@@ -29,4 +29,8 @@ module Display
     print "     a   b   c   d   e   f   g   h"
     puts ""
   end
+
+  def self.checkmate(winner, num_moves)
+    puts "Checkmate! #{winner} wins after #{num_moves} moves!"
+  end
 end

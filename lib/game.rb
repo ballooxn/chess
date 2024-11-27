@@ -20,6 +20,8 @@ class Game
     @winner = false
 
     @board = board.nil? ? setup_board : board
+
+    @num_moves = 0
   end
 
   def start_game
@@ -43,7 +45,7 @@ class Game
 
       @winner = check_winner(curr_plr)
     end
-    puts "#{curr_plr}Has won!"
+    Display.checkmate(@winner.color, @num_moves)
   end
 
   def player_input(player)
@@ -237,6 +239,7 @@ class Game
       # Revert move.
       @board[original_pos[0]][original_pos[1]] = king
       @board[new_x][new_y] = piece_at_target
+
       return false unless in_check
     end
 
@@ -252,6 +255,8 @@ class Game
 
     piece.pos = target
     piece.times_moved += 1
+
+    @num_moves += 1
   end
 
   private

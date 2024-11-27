@@ -3,6 +3,8 @@
 
 TO-DO
 
+Make check_winner loop through EVERY piece, to account for pieces taking the piece giving the check/blocking
+
 Remove piece from pieces array if overwritten on the board
 
 check if game is over
