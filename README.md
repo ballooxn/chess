@@ -9,6 +9,8 @@ Add checking king functionality (kill me now)
 
 cant move king into check
 
+end game if checkmate
+
 End game if over 50 move rule (might not do this)
 
 Castling (long and short)

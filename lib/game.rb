@@ -38,6 +38,8 @@ class Game
       target = input[1]
 
       move_piece(piece_to_move, target)
+
+      @winner = check_winner
     end
   end
 
@@ -81,23 +83,35 @@ class Game
   end
 
   def possible_move(input, player)
-    piece_name = LETTER_TO_PIECE[input[0]]
-    # Pawns have seperate moves for white or black colors, so we make sure to get the correct color if its a pawn
-    moves = piece_name == "pawn" ? PIECE_MOVES[piece_name][player.color] : PIECE_MOVES[piece_name]
+    input_piece_name = LETTER_TO_PIECE[input[0]]
 
     target = [input[1], input[2]]
 
     Piece.pieces.each do |piece|
-      next unless piece.piece_name == piece_name && piece.color == player.color
+      next unless piece.piece_name == input_piece_name && piece.color == player.color
 
-      return piece if can_move_to_target?(piece, target, moves, piece_name)
+      next unless can_move_to_target?(piece, target, piece.piece_name, player.color)
+
+      # find the king of the player_color
+      # If after making the move, the king is in check (pass in new_x and new_y to king_in_check?)
+      # disallow move and print out that player is moving into check.
+      king = Piece.pieces.find { |p| p.piece_name == "king" && p.color == player.color }
+
+      if king_in_check?(king.color, king.pos)
+        puts "Cannot move king into check!"
+        next
+      end
+      return piece
     end
     false
   end
 
-  def can_move_to_target?(piece, target, moves, piece_name)
+  def can_move_to_target?(piece, target, piece_name, player_color)
     x = piece.pos[0]
     y = piece.pos[1]
+
+    # Pawns have seperate moves for white or black colors, so we make sure to get the correct color if its a pawn
+    moves = piece_name == "pawn" ? PIECE_MOVES["pawn"][player_color] : PIECE_MOVES[piece_name]
 
     moves.each_with_index do |move, index|
       # Pawn can only move diagonally to capture another piece.
@@ -113,34 +127,68 @@ class Game
 
       next if moving_over_piece?(move, x, y, piece_name, target)
 
-      return true if new_x == target[0] && new_y == target[1]
+      return true if target == [new_x, new_y]
     end
 
     false
   end
 
   def moving_over_piece?(move, curr_x, curr_y, name, target)
-    return false if name == "knight"
-
     move_x = move[0]
     move_y = move[1]
 
-    (1..[move_x.abs, move_y.abs].max).each do |i|
-      new_x = curr_x + (move_x.positive? ? i : -i)
-      new_y = curr_y + (move_y.positive? ? i : -i)
+    # Knights jump over pieces, so we dont check for them
+    return false if name == "knight"
 
-      break if new_x < 0 || new_x > 7 || new_y < 0 || new_y > 7
+    if move_x.abs >= 0
+      move_x.abs.times do |_i|
+        move_x.positive? ? curr_x += 1 : curr_x -= 1
+        if move_y.abs.positive?
+          if move_y.positive?
+            curr_y += 1
+            move_y -= 1
+          else
+            curr_y -= 1
+            move_y += 1
+          end
+        end
 
-      return true if @board[new_x][new_y] != "_" && target != [new_x, new_y]
+        return true if @board[curr_x][curr_y] != "_" && target != [curr_x, curr_y]
+      end
+    else
+      move_y.abs.times do |_i|
+        move_y.positive? ? curr_y += 1 : curr_y -= 1
+        if move_x.positive?
+          if move_y.positive?
+            curr_x += 1
+            move_x -= 1
+          else
+            curr_x -= 1
+            move_x += 1
+          end
+        end
+
+        return true if @board[curr_x][curr_y] != "_" && target != [curr_x, curr_y]
+      end
     end
-
     false
   end
 
-  def game_over?
+  def check_winner
     # If king is checked
     # Check every valid move to see if king is in check after making the move.
     # If every valid move results in being checked, its checkmate
+  end
+
+  def king_in_check?(king_color, king_position)
+    # Loop through every piece that is an opposite color
+    Piece.pieces.each do |piece|
+      next if piece.color == king_color
+
+      # Check all possible moves to see if they lead to the king's position without moving over another piece.
+      return true if can_move_to_target?(piece, king_position, piece.piece_name, king_color)
+    end
+    false
   end
 
   def move_piece(piece, target)
