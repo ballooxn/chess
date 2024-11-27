@@ -140,32 +140,27 @@ class Game
     # Knights jump over pieces, so we dont check for them
     return false if name == "knight"
 
+    direction_x = move_x.positive? ? 1 : -1
+    direction_y = move_y.positive? ? 1 : -1
+
     if move_x.abs >= 0
       move_x.abs.times do |_i|
-        move_x.positive? ? curr_x += 1 : curr_x -= 1
+        curr_x += direction_x
+        # Only go up/down if there if we can.
         if move_y.abs.positive?
-          if move_y.positive?
-            curr_y += 1
-            move_y -= 1
-          else
-            curr_y -= 1
-            move_y += 1
-          end
+          curr_y += direction_y
+          move_y -= direction_y
         end
 
         return true if @board[curr_x][curr_y] != "_" && target != [curr_x, curr_y]
       end
     else
       move_y.abs.times do |_i|
-        move_y.positive? ? curr_y += 1 : curr_y -= 1
-        if move_x.positive?
-          if move_y.positive?
-            curr_x += 1
-            move_x -= 1
-          else
-            curr_x -= 1
-            move_x += 1
-          end
+        curr_y += direction_y
+
+        if move_x.abs.positive?
+          curr_x += direction_x
+          move_x -= direction_x
         end
 
         return true if @board[curr_x][curr_y] != "_" && target != [curr_x, curr_y]

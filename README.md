@@ -17,6 +17,8 @@ Castling (long and short)
 
 Pawn promotion
 
+Player can input 'nbd3' in order to specifically move the b knight
+
 End game if stalemate
 
 Make white play from bottom 
