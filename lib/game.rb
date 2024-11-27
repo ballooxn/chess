@@ -75,7 +75,7 @@ class Game
 
     return false unless input[1].between?(0, 7) && input[2].between?(0, 7)
 
-    # Check if input is reachable in one turn
+    # You cant take your own pieces
     target_piece = @board[input[1]][input[2]]
     return false if target_piece != "_" && target_piece.color == player.color
 
@@ -92,16 +92,26 @@ class Game
 
       next unless can_move_to_target?(piece, target, piece.piece_name, player.color)
 
-      # find the king of the player_color
-      # If after making the move, the king is in check (pass in new_x and new_y to king_in_check?)
-      # disallow move and print out that player is moving into check.
       king = Piece.pieces.find { |p| p.piece_name == "king" && p.color == player.color }
 
-      if king_in_check?(king.color, king.pos)
-        puts "Cannot move king into check!"
-        next
+      original_pos = piece.pos
+      # If we are moving the king, we should pass the target position.
+      king_position = king.pos
+      if king.piece_name == piece.piece_name
+        king_position = target
+      else
+        # We must 'fake' the position of the piece we're moving to accurately show whether
+        # moving to the target would result in the king being checked or not.
+
+        piece.pos = target
       end
-      return piece
+      in_check = king_in_check?(king.color, king_position)
+      # If we 'faked' the pieces position, we must revert it back to its original position.
+      piece.pos = original_pos
+      return piece unless in_check
+
+      puts "Cannot move king into check!"
+      next
     end
     false
   end
@@ -170,7 +180,7 @@ class Game
   end
 
   def check_winner
-    # If king is checked
+    # If opposite color king is checked
     # Check every valid move to see if king is in check after making the move.
     # If every valid move results in being checked, its checkmate
   end
