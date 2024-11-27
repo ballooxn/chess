@@ -92,10 +92,11 @@ class Game
 
       next unless can_move_to_target?(piece, target, piece.piece_name, player.color)
 
-      king = Piece.pieces.find { |p| p.piece_name == "king" && p.color == player.color }
+      king = find_king(player.color)
 
       original_pos = piece.pos
-      piece_at_orig_pos = @board[original_pos[0]][original_pos[1]]
+      piece_at_target = @board[target[0]][target[1]]
+
       # If we are moving the king, we should pass the target position.
       king_position = king.pos
       if king.piece_name == piece.piece_name
@@ -105,10 +106,12 @@ class Game
         # moving to the target would result in the king being checked or not.
 
         @board[target[0]][target[1]] = piece
+        @board[original_pos[0]][original_pos[1]] = "_"
       end
       in_check = king_in_check?(king.color, king_position)
       # If we 'faked' the pieces position, we must revert it back to its original position.
-      @board[original_pos[0]][original_pos[1]] = piece_at_orig_pos
+      @board[target[0]][target[1]] = piece_at_target
+      @board[original_pos[0]][original_pos[1]] = piece
 
       return piece unless in_check
 
@@ -181,12 +184,6 @@ class Game
     false
   end
 
-  def check_winner
-    # If opposite color king is checked
-    # Check every valid move to see if king is in check after making the move.
-    # If every valid move results in being checked, its checkmate
-  end
-
   def king_in_check?(king_color, king_position)
     # Loop through every piece that is an opposite color
     Piece.pieces.each do |piece|
@@ -196,6 +193,12 @@ class Game
       return true if can_move_to_target?(piece, king_position, piece.piece_name, king_color)
     end
     false
+  end
+
+  def check_winner
+    # If opposite color king is checked
+    # Check every valid move to see if king is in check after making the move.
+    # If every valid move results in being checked, its checkmate
   end
 
   def move_piece(piece, target)
@@ -210,6 +213,10 @@ class Game
   end
 
   private
+
+  def find_king(color)
+    Piece.pieces.find { |p| p.piece_name == "king" && p.color == color }
+  end
 
   def setup_board
     board = Array.new(8) { Array.new(8, "_") }
