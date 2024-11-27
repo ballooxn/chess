@@ -3,6 +3,8 @@
 
 TO-DO
 
+Remove piece from pieces array if overwritten on the board
+
 check if game is over
 
 Add checking king functionality (kill me now)

@@ -29,8 +29,9 @@ class Game
 
   def game_loop
     curr_plr = @player2
+    Display.display_board(@board)
     until @winner
-      Display.display_board(@board)
+
       curr_plr = curr_plr == @player2 ? @player1 : @player2
 
       input = player_input(curr_plr)
@@ -38,10 +39,11 @@ class Game
       target = input[1]
 
       move_piece(piece_to_move, target)
+      Display.display_board(@board)
 
-      @winner = check_winner(player)
+      @winner = check_winner(curr_plr)
     end
-    puts curr_plr + "Has won!"
+    puts "#{curr_plr}Has won!"
   end
 
   def player_input(player)
@@ -213,26 +215,31 @@ class Game
     # If every valid move results in being checked, its checkmate
     king = find_king(player.color == "white" ? "black" : "white")
 
-    if king_in_check?(king.color, king.pos)
-      # Loop through every move
-      # If king is not in check after move then return player as winner
-      original_pos = king.pos
+    return false unless king_in_check?(king.color, king.pos)
 
-      KING_MOVES.each do |move|
-        new_x = king.pos + move[0]
-        new_y = king.pos + move[1]
+    # Loop through every move
+    # If king is not in check after move then return player as winner
+    original_pos = king.pos
 
-        next unless valid_target?([new_x, new_y], king.color)
+    KING_MOVES.each do |move|
+      new_x = king.pos[0] + move[0]
+      new_y = king.pos[1] + move[1]
 
-        # Fake the move in order to accurately use king_in_check?
-        @board[new_x][new_y] = king
+      new_pos = [new_x, new_y]
 
-        in_check = king_in_check?(king.color, king.pos)
-        # Revert move.
-        @board[original_pos[0]][original_pos[1]] = king
-        return false unless in_check
-      end
+      next unless valid_target?([new_x, new_y], king.color)
+
+      # Fake the move in order to accurately use king_in_check?
+      piece_at_target = @board[new_x][new_y]
+      @board[new_x][new_y] = king
+
+      in_check = king_in_check?(king.color, new_pos)
+      # Revert move.
+      @board[original_pos[0]][original_pos[1]] = king
+      @board[new_x][new_y] = piece_at_target
+      return false unless in_check
     end
+
     player
   end
 
