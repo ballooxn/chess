@@ -95,6 +95,7 @@ class Game
       king = Piece.pieces.find { |p| p.piece_name == "king" && p.color == player.color }
 
       original_pos = piece.pos
+      piece_at_orig_pos = @board[original_pos[0]][original_pos[1]]
       # If we are moving the king, we should pass the target position.
       king_position = king.pos
       if king.piece_name == piece.piece_name
@@ -103,11 +104,12 @@ class Game
         # We must 'fake' the position of the piece we're moving to accurately show whether
         # moving to the target would result in the king being checked or not.
 
-        piece.pos = target
+        @board[target[0]][target[1]] = piece
       end
       in_check = king_in_check?(king.color, king_position)
       # If we 'faked' the pieces position, we must revert it back to its original position.
-      piece.pos = original_pos
+      @board[original_pos[0]][original_pos[1]] = piece_at_orig_pos
+
       return piece unless in_check
 
       puts "Cannot move king into check!"
