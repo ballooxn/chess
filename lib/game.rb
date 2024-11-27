@@ -39,8 +39,9 @@ class Game
 
       move_piece(piece_to_move, target)
 
-      @winner = check_winner
+      @winner = check_winner(player)
     end
+    puts curr_plr + "Has won!"
   end
 
   def player_input(player)
@@ -73,11 +74,15 @@ class Game
     return false unless input[1].to_s.length == 1 && input[1].to_s.match?(/\d/)
     return false unless input[2].to_s.length == 1 && input[2].to_s.match?(/\d/)
 
-    return false unless input[1].between?(0, 7) && input[2].between?(0, 7)
+    valid_target?([input[1], input[2]], player.color)
+  end
+
+  def valid_target?(target, color)
+    return false unless target[0].between?(0, 7) && target[1].between?(0, 7)
 
     # You cant take your own pieces
-    target_piece = @board[input[1]][input[2]]
-    return false if target_piece != "_" && target_piece.color == player.color
+    target_piece = @board[target[0]][target[1]]
+    return false if target_piece != "_" && target_piece.color == color
 
     true
   end
@@ -90,43 +95,21 @@ class Game
     Piece.pieces.each do |piece|
       next unless piece.piece_name == input_piece_name && piece.color == player.color
 
-      next unless can_move_to_target?(piece, target, piece.piece_name, player.color)
+      next unless can_move_to_target?(piece, target)
 
-      king = find_king(player.color)
-
-      original_pos = piece.pos
-      piece_at_target = @board[target[0]][target[1]]
-
-      # If we are moving the king, we should pass the target position.
-      king_position = king.pos
-      if king.piece_name == piece.piece_name
-        king_position = target
-      else
-        # We must 'fake' the position of the piece we're moving to accurately show whether
-        # moving to the target would result in the king being checked or not.
-
-        @board[target[0]][target[1]] = piece
-        @board[original_pos[0]][original_pos[1]] = "_"
-      end
-      in_check = king_in_check?(king.color, king_position)
-      # If we 'faked' the pieces position, we must revert it back to its original position.
-      @board[target[0]][target[1]] = piece_at_target
-      @board[original_pos[0]][original_pos[1]] = piece
-
-      return piece unless in_check
-
-      puts "Cannot move king into check!"
-      next
+      return piece unless moving_into_check?(piece, target)
     end
     false
   end
 
-  def can_move_to_target?(piece, target, piece_name, player_color)
+  def can_move_to_target?(piece, target)
     x = piece.pos[0]
     y = piece.pos[1]
 
+    piece_name = piece.piece_name
+
     # Pawns have seperate moves for white or black colors, so we make sure to get the correct color if its a pawn
-    moves = piece_name == "pawn" ? PIECE_MOVES["pawn"][player_color] : PIECE_MOVES[piece_name]
+    moves = piece_name == "pawn" ? PIECE_MOVES["pawn"][piece.color] : PIECE_MOVES[piece_name]
 
     moves.each_with_index do |move, index|
       # Pawn can only move diagonally to capture another piece.
@@ -184,21 +167,73 @@ class Game
     false
   end
 
+  def moving_into_check?(piece, target)
+    king = find_king(piece.color)
+
+    original_pos = piece.pos
+    piece_at_target = @board[target[0]][target[1]]
+
+    # If we are moving the king, we should pass the target position.
+    king_position = king.pos
+    if king.piece_name == piece.piece_name
+      king_position = target
+    else
+      # We must 'fake' the position of the piece we're moving to accurately show whether
+      # moving to the target would result in the king being checked or not.
+
+      @board[target[0]][target[1]] = piece
+      @board[original_pos[0]][original_pos[1]] = "_"
+    end
+    in_check = king_in_check?(king.color, king_position)
+    # If we 'faked' the pieces position, we must revert it back to its original position.
+    @board[target[0]][target[1]] = piece_at_target
+    @board[original_pos[0]][original_pos[1]] = piece
+
+    if in_check
+      puts "Cannot move king into check!"
+      return true
+    end
+    false
+  end
+
   def king_in_check?(king_color, king_position)
     # Loop through every piece that is an opposite color
     Piece.pieces.each do |piece|
       next if piece.color == king_color
 
       # Check all possible moves to see if they lead to the king's position without moving over another piece.
-      return true if can_move_to_target?(piece, king_position, piece.piece_name, king_color)
+      return true if can_move_to_target?(piece, king_position)
     end
     false
   end
 
-  def check_winner
+  def check_winner(player)
     # If opposite color king is checked
     # Check every valid move to see if king is in check after making the move.
     # If every valid move results in being checked, its checkmate
+    king = find_king(player.color == "white" ? "black" : "white")
+
+    if king_in_check?(king.color, king.pos)
+      # Loop through every move
+      # If king is not in check after move then return player as winner
+      original_pos = king.pos
+
+      KING_MOVES.each do |move|
+        new_x = king.pos + move[0]
+        new_y = king.pos + move[1]
+
+        next unless valid_target?([new_x, new_y], king.color)
+
+        # Fake the move in order to accurately use king_in_check?
+        @board[new_x][new_y] = king
+
+        in_check = king_in_check?(king.color, king.pos)
+        # Revert move.
+        @board[original_pos[0]][original_pos[1]] = king
+        return false unless in_check
+      end
+    end
+    player
   end
 
   def move_piece(piece, target)
