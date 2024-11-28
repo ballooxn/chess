@@ -221,26 +221,43 @@ class Game
 
     # Loop through every move
     # If king is not in check after move then return player as winner
-    original_pos = king.pos
 
-    KING_MOVES.each do |move|
-      new_x = king.pos[0] + move[0]
-      new_y = king.pos[1] + move[1]
+    Piece.pieces.each do |piece|
+      next unless piece.color == king.color
 
-      new_pos = [new_x, new_y]
+      piece_name = piece.piece_name
 
-      next unless valid_target?([new_x, new_y], king.color)
+      moves = piece_name == "pawn" ? PIECE_MOVES["pawn"][piece.color] : PIECE_MOVES[piece_name]
 
-      # Fake the move in order to accurately use king_in_check?
-      piece_at_target = @board[new_x][new_y]
-      @board[new_x][new_y] = king
+      original_pos = piece.pos
 
-      in_check = king_in_check?(king.color, new_pos)
-      # Revert move.
-      @board[original_pos[0]][original_pos[1]] = king
-      @board[new_x][new_y] = piece_at_target
+      moves.each_with_index do |move, index|
+        new_x = piece.pos[0] + move[0]
+        new_y = piece.pos[1] + move[1]
 
-      return false unless in_check
+        target = [new_x, new_y]
+
+        # Pawn can only move diagonally to capture another piece.
+        next if piece_name == "pawn" && @board[target[0]][target[1]] == "_" && [1, 2].include?(index)
+        # Pawn cannnot move 2 space unless its the first turn
+        next if piece_name == "pawn" && piece.times_moved > 0 && index == 0 # rubocop:disable Style/NumericPredicate
+
+        next unless valid_target?(target, piece.color)
+
+        # Fake the move in order to accurately use king_in_check?
+        piece_at_target = @board[new_x][new_y]
+        @board[new_x][new_y] = piece
+
+        king_position = king.pos
+        king_position = target if piece_name == "king"
+
+        in_check = king_in_check?(king.color, king_position)
+        # Revert move.
+        @board[original_pos[0]][original_pos[1]] = piece
+        @board[new_x][new_y] = piece_at_target
+
+        return false unless in_check
+      end
     end
 
     player
