@@ -3,17 +3,18 @@
 
 TO-DO
 
-Make check_winner loop through EVERY piece, to account for pieces taking the piece giving the check/blocking
-
 Remove piece from pieces array if overwritten on the board
 
-check if game is over
+Say something in display to indicate you can do these inputs.
+    Can say something like "nbd2" and also something like "r2d3". 
+    Would be like: if string length == 4
+    if string[1] == letter then look use only the piece on that column
+    elseif string[1] == number then only use piece on that row.
+    Easy peasy.
 
-Add checking king functionality (kill me now)
-
-cant move king into check
-
-end game if checkmate
+    Can say something like "d2"
+    would be like: if string length == 2
+    Add "p" to the beginning of the string.
 
 End game if over 50 move rule (might not do this)
 

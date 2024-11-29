@@ -268,6 +268,14 @@ class Game
     original_y = piece.pos[1]
 
     @board[original_x][original_y] = "_"
+
+    overwritten_piece = @board[target[0]][target[1]]
+    if overwritten_piece != "_"
+
+      # remove piece from pieces array
+      Piece.pieces.delete(overwritten_piece)
+    end
+    @num_moves += 1
     @board[target[0]][target[1]] = piece
 
     piece.pos = target
