@@ -73,7 +73,7 @@ class Game
       input = input.split("", 4)
       input.push(input[1])
       input.delete_at(1) # Move the column/row index of piece to the back.
-      p input
+      input[3].to_i if input[3].match?(/\d/)
     when 3
       input = input.split("", 3)
     when 2
@@ -103,8 +103,8 @@ class Game
     return false unless input[2].to_s.length == 1 && input[2].to_s.match?(/\d/)
 
     if input.length == 4
+      return false unless input[3].match?(/[a-h]/) || input[3].to_i.between?(0, 7)
       return false unless input[3].to_s.length == 1
-      return false unless input[3].match?(/[a-h]/) || input[3].between?(0, 7)
     end
 
     valid_target?([input[1], input[2]], player.color)
