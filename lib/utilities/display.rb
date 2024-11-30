@@ -9,7 +9,8 @@ module Display
 
   def self.player_input(color)
     puts "#{color.capitalize} player, pick which piece to move and where to move it!"
-    puts "Type it in chess notation, ex: 'nf5' to move the knight to F5"
+    puts "Type it in chess notation, (ex: nf5) to move the knight to F5"
+    puts "You can just type the target for pawns (ex: d2) or type the column/row of the piece to move (ex: nbd2)"
   end
 
   def self.display_board(board)

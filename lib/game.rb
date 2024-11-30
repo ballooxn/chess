@@ -88,8 +88,7 @@ class Game
     original_input2 = input[2]
     input[2] = LETTER_TO_NUMBER.index(input[1].downcase) if input[1].match?(/[a-h]/)
     input[1] = original_input2.to_i
-    input
-    # change input[0] to the full piece name
+    input[0] = LETTER_TO_PIECE[input[0]]
   end
 
   def valid_input?(input, player)
@@ -121,7 +120,7 @@ class Game
   end
 
   def possible_move(input, player)
-    input_piece_name = LETTER_TO_PIECE[input[0]]
+    piece_name = input[0]
 
     target = [input[1], input[2]]
 
@@ -130,9 +129,9 @@ class Game
     if input.length == 4
       column = input[3].is_a?(String) ? LETTER_TO_NUMBER.index(input[3]) : nil
       row = input[3].is_a?(Integer) ? input[3] : nil
-      pieces = find_matching_pieces(input_piece_name, player.color, column, row)
+      pieces = find_matching_pieces(piece_name, player.color, column, row)
     else
-      pieces = find_matching_pieces(input_piece_name, player.color)
+      pieces = find_matching_pieces(piece_name, player.color)
     end
 
     pieces.each do |piece|
@@ -155,7 +154,7 @@ class Game
     moves.each_with_index do |move, index|
       # Pawn can only move diagonally to capture another piece.
       next if piece_name == "pawn" && @board[target[0]][target[1]] == "_" && [1, 2].include?(index)
-      # Pawn cannnot move 2 space unless its the first turn
+      # Pawn can only move 2 space if it's their first move
       next if piece_name == "pawn" && piece.times_moved > 0 && index == 0 # rubocop:disable Style/NumericPredicate
 
       # Move must stay within the board
