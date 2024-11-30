@@ -182,7 +182,7 @@ class Game
     direction_x = move_x.positive? ? 1 : -1
     direction_y = move_y.positive? ? 1 : -1
 
-    if move_x.abs >= 0
+    if move_x.abs.positive?
       move_x.abs.times do |_i|
         curr_x += direction_x
         # Only go up/down if there if we can.
@@ -337,7 +337,6 @@ class Game
 
       array << p
     end
-    p array
     array
   end
 
