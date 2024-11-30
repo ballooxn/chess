@@ -3,8 +3,6 @@
 
 TO-DO
 
-Remove piece from pieces array if overwritten on the board
-
 Say something in display to indicate you can do these inputs.
     Can say something like "nbd2" and also something like "r2d3". 
     Would be like: if string length == 4
@@ -22,10 +20,10 @@ Castling (long and short)
 
 Pawn promotion
 
-Player can input 'nbd3' in order to specifically move the b knight
-
 End game if stalemate
 
 Make white play from bottom 
 
 Change it to show 1-8
+
+Save and load game

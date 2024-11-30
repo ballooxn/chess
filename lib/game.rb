@@ -56,16 +56,40 @@ class Game
     valid_move = false
     until valid_move
 
-      input = gets.chomp.downcase.split("", 3)
+      input = gets.chomp.downcase
+      input = input_to_array(input)
       # reverse the numbers as the letters should be columns
-      original_input2 = input[2]
-      input[2] = LETTER_TO_NUMBER.index(input[1].downcase) if input[1].match?(/[a-h]/)
-      input[1] = original_input2.to_i
+
       next unless valid_input?(input, player)
 
       piece_to_move = possible_move(input, player)
       return [piece_to_move, [input[1], input[2]]] if piece_to_move
     end
+  end
+
+  def input_to_array(input)
+    case input.length
+    when 4
+      input = input.split("", 4)
+      input.push(input[1])
+      input.delete_at(1) # Move the column/row index of piece to the back.
+      p input
+    when 3
+      input = input.split("", 3)
+    when 2
+      # Putting only the target without a piece means you're moving a pawn.
+      input = input.split("", 2)
+      input.unshift("p")
+    else
+      return nil
+    end
+
+    # reverse the numbers as the letters should be the y input
+    original_input2 = input[2]
+    input[2] = LETTER_TO_NUMBER.index(input[1].downcase) if input[1].match?(/[a-h]/)
+    input[1] = original_input2.to_i
+    input
+    # change input[0] to the full piece name
   end
 
   def valid_input?(input, player)
@@ -77,6 +101,11 @@ class Game
 
     return false unless input[1].to_s.length == 1 && input[1].to_s.match?(/\d/)
     return false unless input[2].to_s.length == 1 && input[2].to_s.match?(/\d/)
+
+    if input.length == 4
+      return false unless input[3].to_s.length == 1
+      return false unless input[3].match?(/[a-h]/) || input[3].between?(0, 7)
+    end
 
     valid_target?([input[1], input[2]], player.color)
   end
@@ -96,9 +125,17 @@ class Game
 
     target = [input[1], input[2]]
 
-    Piece.pieces.each do |piece|
-      next unless piece.piece_name == input_piece_name && piece.color == player.color
+    pieces = []
+    # Find the piece
+    if input.length == 4
+      column = input[3].is_a?(String) ? LETTER_TO_NUMBER.index(input[3]) : nil
+      row = input[3].is_a?(Integer) ? input[3] : nil
+      pieces = find_matching_pieces(input_piece_name, player.color, column, row)
+    else
+      pieces = find_matching_pieces(input_piece_name, player.color)
+    end
 
+    pieces.each do |piece|
       next unless can_move_to_target?(piece, target)
 
       return piece unless moving_into_check?(piece, target)
@@ -275,7 +312,7 @@ class Game
       # remove piece from pieces array
       Piece.pieces.delete(overwritten_piece)
     end
-    @num_moves += 1
+
     @board[target[0]][target[1]] = piece
 
     piece.pos = target
@@ -285,6 +322,24 @@ class Game
   end
 
   private
+
+  def find_matching_pieces(piece_name, color, column = nil, row = nil)
+    array = []
+
+    Piece.pieces.each do |p|
+      next unless p.piece_name == piece_name && p.color == color
+
+      if column
+        next unless p.pos[1] == column
+      elsif row
+        next unles p.pos[0] == row
+      end
+
+      array << p
+    end
+    p array
+    array
+  end
 
   def find_king(color)
     Piece.pieces.find { |p| p.piece_name == "king" && p.color == color }

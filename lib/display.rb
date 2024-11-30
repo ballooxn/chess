@@ -31,6 +31,6 @@ module Display
   end
 
   def self.checkmate(winner, num_moves)
-    puts "Checkmate! #{winner} wins after #{num_moves} moves!"
+    puts "Checkmate! #{winner.capitalize} wins after #{num_moves} moves!"
   end
 end
