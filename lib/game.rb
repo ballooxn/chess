@@ -52,8 +52,6 @@ class Game
   end
 
   def player_input(player)
-    # in the future, allow player to input just 'd2' to move a pawn instead of 'pd2'
-
     # The first part of input is the piece, second and third is position to move to.
     Display.player_input(player.color)
     valid_move = false
@@ -61,9 +59,10 @@ class Game
 
       input = gets.chomp.downcase
       input = input_to_array(input)
-      # reverse the numbers as the letters should be columns
 
       next unless @referee.valid_input?(input, player)
+
+      input[0] = LETTER_TO_PIECE[input[0]]
 
       piece_to_move = @referee.possible_move(input, player)
       return [piece_to_move, [input[1], input[2]]] if piece_to_move
@@ -91,7 +90,7 @@ class Game
     original_input2 = input[2]
     input[2] = LETTER_TO_NUMBER.index(input[1].downcase) if input[1].match?(/[a-h]/)
     input[1] = original_input2.to_i
-    input[0] = LETTER_TO_PIECE[input[0]]
+    input
   end
 
   def move_piece(piece, target)
@@ -116,27 +115,6 @@ class Game
   end
 
   private
-
-  def find_matching_pieces(piece_name, color, column = nil, row = nil)
-    array = []
-
-    Piece.pieces.each do |p|
-      next unless p.piece_name == piece_name && p.color == color
-
-      if column
-        next unless p.pos[1] == column
-      elsif row
-        next unles p.pos[0] == row
-      end
-
-      array << p
-    end
-    array
-  end
-
-  def find_king(color)
-    Piece.pieces.find { |p| p.piece_name == "king" && p.color == color }
-  end
 
   def setup_board
     board = Array.new(8) { Array.new(8, "_") }

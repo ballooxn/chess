@@ -1,6 +1,17 @@
 # validates moves and checks for a winner
 
+require_relative "pieces/piece"
+require_relative "pieces/piece_moves"
+
 class Referee
+  include PossibleMoves
+
+  LETTER_TO_NUMBER = %w[a b c d e f g h].freeze
+  LETTER_TO_PIECE = { "p" => "pawn", "n" => "knight", "k" => "king", "b" => "bishop", "q" => "queen",
+                      "r" => "rook" }.freeze
+  PIECE_MOVES = { "pawn" => { "white" => WHITE_PAWN_MOVES, "black" => BLACK_PAWN_MOVES }, "knight" => KNIGHT_MOVES, "bishop" => BISHOP_MOVES,
+                  "king" => KING_MOVES, "queen" => QUEEN_MOVES, "rook" => ROOK_MOVES }.freeze
+
   def initialize(board)
     @board = board
   end
@@ -38,14 +49,13 @@ class Referee
 
     target = [input[1], input[2]]
 
-    pieces = []
     # Find the piece
     if input.length == 4
       column = input[3].is_a?(String) ? LETTER_TO_NUMBER.index(input[3]) : nil
       row = input[3].is_a?(Integer) ? input[3] : nil
-      pieces = find_matching_pieces(piece_name, player.color, column, row)
+      pieces = Piece.find_matching_pieces(piece_name, player.color, column, row)
     else
-      pieces = find_matching_pieces(piece_name, player.color)
+      pieces = Piece.find_matching_pieces(piece_name, player.color)
     end
 
     pieces.each do |piece|
@@ -122,7 +132,7 @@ class Referee
   end
 
   def moving_into_check?(piece, target)
-    king = find_king(piece.color)
+    king = Piece.find_king(piece.color)
 
     original_pos = piece.pos
     piece_at_target = @board[target[0]][target[1]]
@@ -165,7 +175,7 @@ class Referee
     # If opposite color king is checked
     # Check every valid move to see if king is in check after making the move.
     # If every valid move results in being checked, its checkmate
-    king = find_king(player.color == "white" ? "black" : "white")
+    king = Piece.find_king(player.color == "white" ? "black" : "white")
 
     return false unless king_in_check?(king.color, king.pos)
 

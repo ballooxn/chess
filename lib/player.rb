@@ -1,7 +1,4 @@
-require_relative "display"
-
 class Player
-  include Display
   attr_reader :color, :rounds_won
 
   def initialize(color, rounds_won = 0)
