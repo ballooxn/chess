@@ -9,8 +9,14 @@ class Referee
   LETTER_TO_NUMBER = %w[a b c d e f g h].freeze
   LETTER_TO_PIECE = { "p" => "pawn", "n" => "knight", "k" => "king", "b" => "bishop", "q" => "queen",
                       "r" => "rook" }.freeze
-  PIECE_MOVES = { "pawn" => { "white" => WHITE_PAWN_MOVES, "black" => BLACK_PAWN_MOVES }, "knight" => KNIGHT_MOVES, "bishop" => BISHOP_MOVES,
-                  "king" => KING_MOVES, "queen" => QUEEN_MOVES, "rook" => ROOK_MOVES }.freeze
+  PIECE_MOVES = {
+    "pawn" => { "white" => WHITE_PAWN_MOVES, "black" => BLACK_PAWN_MOVES },
+    "knight" => KNIGHT_MOVES,
+    "bishop" => BISHOP_MOVES,
+    "king" => KING_MOVES,
+    "queen" => QUEEN_MOVES,
+    "rook" => ROOK_MOVES
+  }.freeze
 
   def initialize(board)
     @board = board
@@ -21,7 +27,7 @@ class Referee
 
     return false if input.nil? || !input.is_a?(Array) || input[2].is_a?(String)
 
-    return false unless input[0].match?(/[rnbqkp]/) && input[0].length == 1
+    return false unless input[0].match?(/[rnbqkp]/)
 
     return false unless input[1].to_s.length == 1 && input[1].to_s.match?(/\d/)
     return false unless input[2].to_s.length == 1 && input[2].to_s.match?(/\d/)
