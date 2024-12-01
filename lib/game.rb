@@ -11,8 +11,6 @@ class Game
   LETTER_TO_NUMBER = %w[a b c d e f g h].freeze
   LETTER_TO_PIECE = { "p" => "pawn", "n" => "knight", "k" => "king", "b" => "bishop", "q" => "queen",
                       "r" => "rook" }.freeze
-  PIECE_MOVES = { "pawn" => { "white" => WHITE_PAWN_MOVES, "black" => BLACK_PAWN_MOVES }, "knight" => KNIGHT_MOVES, "bishop" => BISHOP_MOVES,
-                  "king" => KING_MOVES, "queen" => QUEEN_MOVES, "rook" => ROOK_MOVES }.freeze
 
   def initialize(board = nil)
     @player1 = Player.new("white")
