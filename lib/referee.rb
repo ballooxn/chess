@@ -22,7 +22,7 @@ class Referee
     @board = board
   end
 
-  def valid_input?(input, player)
+  def valid_input?(input, color)
     # add error handling in the future (print out the issue)
     return false if input.nil? || !input.is_a?(Array) || input[2].is_a?(String)
 
@@ -32,7 +32,7 @@ class Referee
 
     return false if input.length == 4 && !(input[3].match?(/[a-h]/) || input[3].to_i.between?(0, 7))
 
-    valid_target?([input[1], input[2]], player.color)
+    valid_target?([input[1], input[2]], color)
   end
 
   def valid_target?(target, color)
@@ -45,34 +45,22 @@ class Referee
     true
   end
 
-  def possible_move(input, player)
+  def piece_to_move(input, color)
     piece_name = input[0]
     target = [input[1], input[2]]
 
-    # Find the piece
-    pieces = if input.length == 4
-               column = input[3].is_a?(String) ? LETTER_TO_NUMBER.index(input[3]) : nil
-               row = input[3].is_a?(Integer) ? input[3] : nil
-               Piece.find_matching_pieces(piece_name, player.color, column, row)
-             else
-               Piece.find_matching_pieces(piece_name, player.color)
-             end
-
-    pieces.each do |piece|
-      next unless can_move_to_target?(piece, target)
-
-      return piece unless moving_into_check?(piece, target)
-    end
-    false
+    pieces = Piece.find_matching_pieces(piece_name, color,
+                                        input[3].is_a?(String) ? LETTER_TO_NUMBER.index(input[3]) : nil,
+                                        input[3].is_a?(Integer) ? input[3] : nil)
+    pieces.find { |piece| can_move_to_target?(piece, target) && !moving_into_check?(piece, target) }
   end
 
   def can_move_to_target?(piece, target)
-    x = piece.pos[0]
-    y = piece.pos[1]
-
+    x, y = piece.pos
     piece_name = piece.piece_name
 
-    # Pawns have seperate moves for white or black colors, so we make sure to get the correct color if its a pawn
+    p x, y
+
     moves = Piece.get_moves(piece_name, piece.color)
 
     moves.each_with_index do |move, index|
@@ -92,7 +80,8 @@ class Referee
   end
 
   def moving_over_piece?(move, curr_x, curr_y, name, target)
-    move_x, move_y = move
+    move_x = move[0]
+    move_y = move[1]
 
     # Knights jump over pieces, so we dont check for them
     return false if name == "knight"
@@ -103,8 +92,7 @@ class Referee
     if move_x.abs.positive?
       move_x.abs.times do |_i|
         curr_x += direction_x
-
-        # Only go up/down if necessary
+        # Only go up/down if there if we can.
         if move_y.abs.positive?
           curr_y += direction_y
           move_y -= direction_y
@@ -128,6 +116,7 @@ class Referee
   end
 
   def moving_into_check?(piece, target)
+    p "test"
     king = Piece.find_king(piece.color)
 
     original_pos = piece.pos
@@ -143,13 +132,14 @@ class Referee
       @board[target[0]][target[1]] = piece
       @board[original_pos[0]][original_pos[1]] = "_"
     end
+
     in_check = king_in_check?(king.color, king_position)
 
     # Revert the "faked" move
     @board[target[0]][target[1]] = piece_at_target
     @board[original_pos[0]][original_pos[1]] = piece
 
-    puts "Cannot move king into check!" if in_check
+    puts "Cannot move into/ignore check!" if in_check
     in_check
   end
 

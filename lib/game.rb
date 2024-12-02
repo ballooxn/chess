@@ -37,7 +37,7 @@ class Game
 
       curr_plr = curr_plr == @player2 ? @player1 : @player2
 
-      input = player_input(curr_plr)
+      input = curr_plr.player_input(@referee)
       piece_to_move = input[0]
       target = input[1]
 
@@ -47,48 +47,6 @@ class Game
       @winner = @referee.check_winner(curr_plr)
     end
     Display.checkmate(@winner.color, @num_moves)
-  end
-
-  def player_input(player)
-    # The first part of input is the piece, second and third is position to move to.
-    Display.player_input(player.color)
-    valid_move = false
-    until valid_move
-
-      input = gets.chomp.downcase
-      input = input_to_array(input)
-
-      next unless @referee.valid_input?(input, player)
-
-      input[0] = LETTER_TO_PIECE[input[0]]
-
-      piece_to_move = @referee.possible_move(input, player)
-      return [piece_to_move, [input[1], input[2]]] if piece_to_move
-    end
-  end
-
-  def input_to_array(input)
-    case input.length
-    when 4
-      input = input.split("", 4)
-      input.push(input[1])
-      input.delete_at(1) # Move the column/row index of piece to the back.
-      input[3].to_i if input[3].match?(/\d/)
-    when 3
-      input = input.split("", 3)
-    when 2
-      # Putting only the target without a piece means you're moving a pawn.
-      input = input.split("", 2)
-      input.unshift("p")
-    else
-      return nil
-    end
-
-    # reverse the numbers as the letters should be the y input
-    original_input2 = input[2]
-    input[2] = LETTER_TO_NUMBER.index(input[1].downcase) if input[1].match?(/[a-h]/)
-    input[1] = original_input2.to_i
-    input
   end
 
   def move_piece(piece, target)
