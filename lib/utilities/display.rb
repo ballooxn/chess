@@ -34,4 +34,12 @@ module Display
   def self.checkmate(winner, num_moves)
     puts "Checkmate! #{winner.capitalize} wins after #{num_moves} moves!"
   end
+
+  def self.stalemate(num_moves)
+    puts "Stalemate! It's a draw after #{num_moves} moves!"
+  end
+
+  def self.fifty_move_rule
+    puts "50 move rule! It's a draw!"
+  end
 end

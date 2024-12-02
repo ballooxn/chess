@@ -46,7 +46,22 @@ class Game
 
       @winner = @referee.check_winner(curr_plr)
     end
-    Display.checkmate(@winner.color, @num_moves)
+    end_game
+  end
+
+  def end_game
+    case @winner
+    when "stalemate"
+      Display.stalemate(@num_moves)
+    when "50"
+      Display.fifty_move_rule
+    else
+      Display.checkmate(@winner.color, @num_moves)
+      @winner.rounds_won += 1
+    end
+    Display.play_again?
+    answer = gets.chomp.downcase
+    answer == "y" ? start_game : exit
   end
 
   def move_piece(piece, target)

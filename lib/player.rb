@@ -28,7 +28,6 @@ class Player
       input[0] = LETTER_TO_PIECE[input[0]]
 
       piece_to_move = referee.piece_to_move(input, @color)
-      p piece_to_move
       return [piece_to_move, [input[1], input[2]]] if piece_to_move
     end
   end

@@ -18,17 +18,28 @@ class Referee
     "rook" => ROOK_MOVES
   }.freeze
 
+  ERRORS = {
+    "invalid_piece" => "Invalid piece. Please use one of the following: #{LETTER_TO_PIECE.keys.join(', ')}",
+    "invalid_target" => "Invalid target. Please use a valid target on the board.",
+    "invalid_move" => "None of your pieces can move there. Please try again."
+  }.freeze
+
   def initialize(board)
     @board = board
   end
 
   def valid_input?(input, color)
-    # add error handling in the future (print out the issue)
     return false if input.nil? || !input.is_a?(Array) || input[2].is_a?(String)
 
-    return false unless input[0].match?(/[rnbqkp]/)
+    unless input[0].match?(/[rnbqkp]/)
+      puts ERRORS["invalid_piece"]
+      return false
+    end
 
-    return false unless input[1].between?(0, 7) && input[2].between?(0, 7)
+    unless input[1].between?(0, 7) && input[2].between?(0, 7)
+      puts ERRORS["invalid_target"]
+      return false
+    end
 
     return false if input.length == 4 && !(input[3].match?(/[a-h]/) || input[3].to_i.between?(0, 7))
 
@@ -36,7 +47,7 @@ class Referee
   end
 
   def valid_target?(target, color)
-    return false unless target[0].between?(0, 7) && target[1].between?(0, 7)
+    return false unless in_bounds?(target[0], target[1])
 
     # You cant take your own pieces
     target_piece = @board[target[0]][target[1]]
@@ -55,11 +66,89 @@ class Referee
     pieces.find { |piece| can_move_to_target?(piece, target) && !moving_into_check?(piece, target) }
   end
 
+  def check_winner(player)
+    king = Piece.find_king(player.color == "white" ? "black" : "white")
+    opposite_king = Piece.find_king(player.color == "white" ? "white" : "black")
+
+    return player if checkmate?(king)
+
+    return "stalemate" if stalemate?(opposite_king)
+
+    nil
+  end
+
+  def stalemate?(king)
+    return false if king_in_check?(king.color, king.pos)
+
+    # Check all pieces of the opposite king's color to see if any valid move exist
+    # Return false if there is any possible move, true if there isn't.
+    Piece.pieces.each do |piece|
+      next unless piece.color == king.color
+
+      p piece
+
+      moves = Piece.get_moves(piece.piece_name, piece.color)
+      p moves
+      # Return true if there is any possible move
+      moves.each do |move|
+        target = [(piece.pos[0] + move[0]), (piece.pos[1] + move[1])]
+        p target
+        # if the move is valid and the piece can move to the target
+        next unless valid_target?(target, piece.color)
+        next if moving_over_piece?(move, piece.pos[0], piece.pos[1], piece.piece_name, target)
+
+        next if moving_into_check?(piece, target, true)
+
+        p piece, move
+
+        return false
+      end
+    end
+
+    true
+  end
+
+  def checkmate?(king)
+    return false unless king_in_check?(king.color, king.pos)
+
+    # Check all pieces of the king's color to see if any valid move exists
+    Piece.pieces.each do |piece|
+      next unless piece.color == king.color
+
+      piece_name = piece.piece_name
+      moves = Piece.get_moves(piece_name, piece.color)
+      original_pos = piece.pos
+
+      moves.each_with_index do |move, index|
+        new_x = piece.pos[0] + move[0]
+        new_y = piece.pos[1] + move[1]
+
+        target = [new_x, new_y]
+
+        next if piece_name == "pawn" && !can_move_pawn?(piece.times_moved, target, index)
+
+        next unless valid_target?(target, piece.color)
+
+        # Fake the move in order to accurately use king_in_check?
+        piece_at_target = @board[new_x][new_y]
+        @board[new_x][new_y] = piece
+
+        king_position = piece.piece_name == "king" ? target : king.pos
+
+        in_check = king_in_check?(king.color, king_position)
+        # Revert move.
+        @board[original_pos[0]][original_pos[1]] = piece
+        @board[new_x][new_y] = piece_at_target
+
+        return false unless in_check
+      end
+    end
+    true
+  end
+
   def can_move_to_target?(piece, target)
     x, y = piece.pos
     piece_name = piece.piece_name
-
-    p x, y
 
     moves = Piece.get_moves(piece_name, piece.color)
 
@@ -70,10 +159,8 @@ class Referee
       new_x = x + move[0]
       new_y = y + move[1]
 
-      next unless new_x.between?(0, 7) && new_y.between?(0, 7)
-      next if moving_over_piece?(move, x, y, piece_name, target)
-
-      return true if target == [new_x, new_y]
+      return true if in_bounds?(new_x, new_y) && target == [new_x, new_y] &&
+                     !moving_over_piece?(move, x, y, piece_name, target)
     end
 
     false
@@ -115,8 +202,7 @@ class Referee
     false
   end
 
-  def moving_into_check?(piece, target)
-    p "test"
+  def moving_into_check?(piece, target, checking_stalemate = false)
     king = Piece.find_king(piece.color)
 
     original_pos = piece.pos
@@ -139,7 +225,7 @@ class Referee
     @board[target[0]][target[1]] = piece_at_target
     @board[original_pos[0]][original_pos[1]] = piece
 
-    puts "Cannot move into/ignore check!" if in_check
+    puts "Cannot move into/ignore check!" if in_check && !checking_stalemate
     in_check
   end
 
@@ -150,53 +236,21 @@ class Referee
     end
   end
 
-  def check_winner(player)
-    king = Piece.find_king(player.color == "white" ? "black" : "white")
-
-    return false unless king_in_check?(king.color, king.pos)
-
-    # Check all pieces of the king's color to see if any valid move exists
-    Piece.pieces.each do |piece|
-      next unless piece.color == king.color
-
-      piece_name = piece.piece_name
-      moves = Piece.get_moves(piece_name, piece.color)
-      original_pos = piece.pos
-
-      moves.each_with_index do |move, index|
-        new_x = piece.pos[0] + move[0]
-        new_y = piece.pos[1] + move[1]
-
-        target = [new_x, new_y]
-
-        next if piece_name == "pawn" && !can_move_pawn?(piece.times_moved, target, index)
-
-        next unless valid_target?(target, piece.color)
-
-        # Fake the move in order to accurately use king_in_check?
-        piece_at_target = @board[new_x][new_y]
-        @board[new_x][new_y] = piece
-
-        king_position = piece.piece_name == "king" ? target : king.pos
-
-        in_check = king_in_check?(king.color, king_position)
-        # Revert move.
-        @board[original_pos[0]][original_pos[1]] = piece
-        @board[new_x][new_y] = piece_at_target
-
-        return false unless in_check
-      end
-    end
-    player
-  end
+  private
 
   def can_move_pawn?(times_moved, target, index)
     # Pawn can only move diagonally to capture another piece.
     return false if @board[target[0]][target[1]] == "_" && [1, 2].include?(index)
 
+    return false if @board[target[0]][target[1]] != "_" && [0, 3].include?(index)
+
     # Pawn cannnot move 2 space unless its the first turn
     return false if times_moved > 0 && index == 0 # rubocop:disable Style/NumericPredicate
 
     true
+  end
+
+  def in_bounds?(x, y)
+    x.between?(0, 7) && y.between?(0, 7)
   end
 end

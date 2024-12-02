@@ -5,8 +5,6 @@ TO-DO
 
 Make function for fake_movement
 
-Error handling
-
 End game if over 50 move rule (might not do this)
 
 Castling (long and short)
