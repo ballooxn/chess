@@ -3,10 +3,12 @@ require_relative "pieces/piece"
 require_relative "pieces/piece_moves"
 require_relative "player"
 require_relative "referee"
+require_relative "utilities/castling"
 
 class Game
   include Display
   include PossibleMoves
+  include Castle
 
   LETTER_TO_NUMBER = %w[a b c d e f g h].freeze
   LETTER_TO_PIECE = { "p" => "pawn", "n" => "knight", "k" => "king", "b" => "bishop", "q" => "queen",
@@ -37,11 +39,18 @@ class Game
 
       curr_plr = curr_plr == @player2 ? @player1 : @player2
 
-      input = curr_plr.player_input(@referee)
-      piece_to_move = input[0]
-      target = input[1]
+      input = curr_plr.player_input(@referee, @board)
+      if input[0].is_a?(Array) # We are castling.
+        p input
+        move_piece(input[0][0], input[0][1]) # Move king
+        move_piece(input[1][0], input[1][1]) # Move rook
+      else
+        piece_to_move = input[0]
+        target = input[1]
 
-      move_piece(piece_to_move, target)
+        move_piece(piece_to_move, target)
+      end
+
       Display.display_board(@board)
 
       @winner = @referee.check_winner(curr_plr)

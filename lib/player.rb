@@ -14,13 +14,20 @@ class Player
     @rounds_won = rounds_won
   end
 
-  def player_input(referee)
+  def player_input(referee, board)
     # The first part of input is the piece, second and third is position to move to.
     Display.player_input(@color)
     valid_move = false
     until valid_move
 
       input = gets.chomp.downcase
+      if %w[oo ooo].include?(input) # we're castling
+        input = Castle.castle(@color, input, board, referee)
+        next if input == false
+
+        return input
+      end
+
       input = input_to_array(input)
 
       next unless referee.valid_input?(input, @color)

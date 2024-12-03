@@ -11,10 +11,6 @@ Castling (long and short)
 
 Pawn promotion
 
-End game if stalemate
-
-Make white play from bottom 
-
 Change it to show 1-8
 
 Save and load game

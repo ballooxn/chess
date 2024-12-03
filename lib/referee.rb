@@ -85,21 +85,15 @@ class Referee
     Piece.pieces.each do |piece|
       next unless piece.color == king.color
 
-      p piece
-
       moves = Piece.get_moves(piece.piece_name, piece.color)
-      p moves
       # Return true if there is any possible move
       moves.each do |move|
         target = [(piece.pos[0] + move[0]), (piece.pos[1] + move[1])]
-        p target
         # if the move is valid and the piece can move to the target
         next unless valid_target?(target, piece.color)
         next if moving_over_piece?(move, piece.pos[0], piece.pos[1], piece.piece_name, target)
 
         next if moving_into_check?(piece, target, true)
-
-        p piece, move
 
         return false
       end
