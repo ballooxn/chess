@@ -42,4 +42,8 @@ module Display
   def self.fifty_move_rule
     puts "50 move rule! It's a draw!"
   end
+
+  def self.promote_pawn
+    puts "What piece would you like to promote to? {q, r, b, n}"
+  end
 end

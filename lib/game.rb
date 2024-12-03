@@ -48,6 +48,8 @@ class Game
         piece_to_move = input[0]
         target = input[1]
 
+        promote_pawn(piece_to_move) if piece_to_move.piece_name == "pawn" && Piece.promoting_pawn?(piece_to_move)
+
         move_piece(piece_to_move, target)
       end
 
@@ -92,6 +94,19 @@ class Game
     piece.times_moved += 1
 
     @num_moves += 1
+  end
+
+  def promote_pawn(piece)
+    piece.piece_name = choose_promotion
+  end
+
+  def choose_promotion
+    piece = ""
+    until piece.length == 1 && piece.match?(/[nbqr]/)
+      Display.promote_pawn
+      piece = gets.chomp.downcase
+    end
+    LETTER_TO_PIECE[piece]
   end
 
   private

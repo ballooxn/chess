@@ -6,8 +6,8 @@ class Piece
   PIECE_MOVES = { "pawn" => { "white" => WHITE_PAWN_MOVES, "black" => BLACK_PAWN_MOVES }, "knight" => KNIGHT_MOVES, "bishop" => BISHOP_MOVES,
                   "king" => KING_MOVES, "queen" => QUEEN_MOVES, "rook" => ROOK_MOVES }.freeze
 
-  attr_accessor :times_moved, :pos
-  attr_reader :color, :piece_name
+  attr_accessor :times_moved, :pos, :piece_name
+  attr_reader :color
 
   @@pieces = []
 
@@ -47,5 +47,9 @@ class Piece
 
   def self.get_moves(name, color)
     name == "pawn" ? PIECE_MOVES["pawn"][color] : PIECE_MOVES[name]
+  end
+
+  def self.promoting_pawn?(piece)
+    (piece.color == "white" && piece.pos[0] == 6) || (piece.color == "black" && piece.pos[0] == 1)
   end
 end
