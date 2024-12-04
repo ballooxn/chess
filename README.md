@@ -3,8 +3,6 @@
 
 TO-DO
 
-Pawn promotion
-
 Save and load game
 
 Simple ai that just picks a random move

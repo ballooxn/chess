@@ -7,6 +7,13 @@ module Display
     puts "Welcome to Chess!"
   end
 
+  def self.choose_game_type
+    puts "Please choose a game type:"
+    puts "1. Player vs Player"
+    puts "2. Player vs Computer"
+    puts "3. Load a saved game"
+  end
+
   def self.player_input(color)
     puts "#{color.capitalize} player, pick which piece to move and where to move it!"
     puts "Type it in chess notation, (ex: nf5) to move the knight to F5. Type 'OO' to short-castle, and 'OOO' to long-castle."

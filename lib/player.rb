@@ -26,6 +26,8 @@ class Player
         next if input == false
 
         return input
+      elsif input == "save"
+        return "save"
       end
 
       input = input_to_array(input)

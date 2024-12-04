@@ -52,4 +52,8 @@ class Piece
   def self.promoting_pawn?(piece)
     (piece.color == "white" && piece.pos[0] == 6) || (piece.color == "black" && piece.pos[0] == 1)
   end
+
+  def self.pieces=(value)
+    @@pieces = value
+  end
 end

@@ -4,11 +4,13 @@ require_relative "pieces/piece_moves"
 require_relative "player"
 require_relative "referee"
 require_relative "utilities/castling"
+require_relative "utilities/data_manager"
 
 class Game
   include Display
   include PossibleMoves
   include Castle
+  include DataManager
 
   LETTER_TO_NUMBER = %w[a b c d e f g h].freeze
   LETTER_TO_PIECE = { "p" => "pawn", "n" => "knight", "k" => "king", "b" => "bishop", "q" => "queen",
@@ -29,6 +31,29 @@ class Game
 
   def start_game
     Display.intro
+    response = nil
+    until %w[1 2 3].include?(response)
+      Display.choose_game_type
+      response = gets.chomp
+    end
+
+    case response
+    when "1"
+      game_loop
+    when "2"
+      play_against_computer
+    when "3"
+      start_saved_game
+    end
+  end
+
+  def start_saved_game
+    data = load_data
+    @board = data[:board]
+    @player1 = Player.new("white", data[:player1].rounds_won)
+    @player2 = Player.new("black", data[:player2].rounds_won)
+    @num_moves = data[:num_moves]
+    Piece.pieces = data[:pieces]
     game_loop
   end
 
@@ -44,6 +69,8 @@ class Game
         p input
         move_piece(input[0][0], input[0][1]) # Move king
         move_piece(input[1][0], input[1][1]) # Move rook
+      elsif input == "save"
+        save_game(@board, @player1, @player2, Piece.pieces, @num_moves)
       else
         piece_to_move = input[0]
         target = input[1]
