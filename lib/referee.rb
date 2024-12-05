@@ -71,7 +71,6 @@ class Referee
     opposite_king = Piece.find_king(player.color == "white" ? "white" : "black")
 
     return player if checkmate?(king)
-
     return "stalemate" if stalemate?(opposite_king)
 
     nil
@@ -93,7 +92,7 @@ class Referee
         next unless valid_target?(target, piece.color)
         next if moving_over_piece?(move, piece.pos[0], piece.pos[1], piece.piece_name, target)
 
-        next if moving_into_check?(piece, target, true)
+        next if moving_into_check?(piece, target, false)
 
         return false
       end
@@ -119,22 +118,12 @@ class Referee
 
         target = [new_x, new_y]
 
-        next if piece_name == "pawn" && !can_move_pawn?(piece.times_moved, target, index)
-
         next unless valid_target?(target, piece.color)
 
-        # Fake the move in order to accurately use king_in_check?
-        piece_at_target = @board[new_x][new_y]
-        @board[new_x][new_y] = piece
+        next if piece_name == "pawn" && !can_move_pawn?(piece.times_moved, target, index)
 
-        king_position = piece.piece_name == "king" ? target : king.pos
-
-        in_check = king_in_check?(king.color, king_position)
-        # Revert move.
-        @board[original_pos[0]][original_pos[1]] = piece
-        @board[new_x][new_y] = piece_at_target
-
-        return false unless in_check
+        return false if !moving_over_piece?(move, original_pos[0], original_pos[1], piece_name,
+                                            target) && !moving_into_check?(piece, target, false)
       end
     end
     true
@@ -196,7 +185,7 @@ class Referee
     false
   end
 
-  def moving_into_check?(piece, target, checking_stalemate_or_engine = false)
+  def moving_into_check?(piece, target, print_errors = true)
     king = Piece.find_king(piece.color)
 
     original_pos = piece.pos
@@ -219,7 +208,7 @@ class Referee
     @board[target[0]][target[1]] = piece_at_target
     @board[original_pos[0]][original_pos[1]] = piece
 
-    puts "Cannot move into/ignore check!" if in_check && !checking_stalemate_or_engine
+    puts "Cannot move into/ignore check!" if in_check && print_errors
     in_check
   end
 

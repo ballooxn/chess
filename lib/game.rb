@@ -23,40 +23,40 @@ class Game
     @player1 = nil
     @player2 = nil
 
-    @referee = Referee.new(@board)
-
     @winner = false
-
     @num_moves = 0
+
+    @referee = Referee.new(@board)
   end
 
   def start_game
     Display.intro
+    choose_game_type
+    game_loop
+  end
+
+  def choose_game_type
     response = nil
     until %w[1 2 3].include?(response)
       Display.choose_game_type
       response = gets.chomp
     end
 
+    if %w[1 2].include?(response)
+      color = nil
+      until %w[black white].include?(color)
+        Display.choose_color
+        color = gets.chomp
+      end
+    end
+
     case response
     when "1"
-      game_loop
-      response = nil
-      until %w[black white].include?(response)
-        Display.choose_color
-        response = gets.chomp
-      end
-      @player1 = Player.new(response)
-      @player2 = Player.new(response == "white" ? "black" : "white")
+      @player1 = Player.new(color)
+      @player2 = Player.new(color == "white" ? "black" : "white")
     when "2"
-      response = nil
-      until %w[black white].include?(response)
-        Display.choose_color
-        response = gets.chomp
-      end
-      @player1 = Player.new(response)
-      @player2 = Engine.new(response == "white" ? "black" : "white", @referee)
-      game_loop
+      @player1 = Player.new(color)
+      @player2 = Engine.new(color == "white" ? "black" : "white", @referee)
     when "3"
       start_saved_game
     end
@@ -69,7 +69,6 @@ class Game
     @player2 = Player.new("black", data[:player2].rounds_won)
     @num_moves = data[:num_moves]
     Piece.pieces = data[:pieces]
-    game_loop
   end
 
   def game_loop
@@ -96,7 +95,6 @@ class Game
 
   # Determines what to do with the input.
   def interpret_input(input)
-    p input
     if input[0].is_a?(Array) # We are castling.
       move_piece(input[0][0], input[0][1]) # Move king
       move_piece(input[1][0], input[1][1]) # Move rook
@@ -124,7 +122,15 @@ class Game
     end
     Display.play_again?
     answer = gets.chomp.downcase
-    answer == "y" ? start_game : exit
+    answer == "y" ? restart_game : exit
+  end
+
+  def restart_game
+    @board = setup_board
+    @winner = false
+    @num_moves = 0
+    Piece.pieces = []
+    game_loop
   end
 
   def move_piece(piece, target)

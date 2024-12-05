@@ -64,4 +64,8 @@ module Display
   def self.promote_pawn
     puts "What piece would you like to promote to? {q, r, b, n}"
   end
+
+  def self.play_again?
+    puts "Would you like to play again? (y/n)"
+  end
 end

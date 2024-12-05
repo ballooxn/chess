@@ -19,7 +19,6 @@ class Player
     Display.player_input(@color)
     valid_move = false
     until valid_move
-
       input = gets.chomp.downcase
       if %w[oo ooo].include?(input) # we're castling
         input = Castle.castle(@color, input, board, referee)

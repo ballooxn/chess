@@ -42,7 +42,7 @@ class Engine
       target = [(piece.pos[0] + move[0]), (piece.pos[1] + move[1])]
       next unless @referee.valid_target?(target, @color) &&
                   !@referee.moving_over_piece?(move, piece.pos[0], piece.pos[1], piece.piece_name,
-                                               target) && !@referee.moving_into_check?(piece, target, true)
+                                               target) && !@referee.moving_into_check?(piece, target, false)
 
       return false if piece.piece_name == "pawn" && !@referee.can_move_pawn?(piece.times_moved, target, index)
 
