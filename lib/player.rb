@@ -3,7 +3,7 @@ require_relative "../lib/referee"
 
 class Player
   include Display
-  attr_reader :color, :rounds_won
+  attr_accessor :color, :rounds_won
 
   LETTER_TO_NUMBER = %w[a b c d e f g h].freeze
   LETTER_TO_PIECE = { "p" => "pawn", "n" => "knight", "k" => "king", "b" => "bishop", "q" => "queen",

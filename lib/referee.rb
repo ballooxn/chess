@@ -196,7 +196,7 @@ class Referee
     false
   end
 
-  def moving_into_check?(piece, target, checking_stalemate = false)
+  def moving_into_check?(piece, target, checking_stalemate_or_engine = false)
     king = Piece.find_king(piece.color)
 
     original_pos = piece.pos
@@ -219,7 +219,7 @@ class Referee
     @board[target[0]][target[1]] = piece_at_target
     @board[original_pos[0]][original_pos[1]] = piece
 
-    puts "Cannot move into/ignore check!" if in_check && !checking_stalemate
+    puts "Cannot move into/ignore check!" if in_check && !checking_stalemate_or_engine
     in_check
   end
 
@@ -229,8 +229,6 @@ class Referee
       piece.color != king_color && can_move_to_target?(piece, king_position)
     end
   end
-
-  private
 
   def can_move_pawn?(times_moved, target, index)
     # Pawn can only move diagonally to capture another piece.

@@ -14,10 +14,21 @@ module Display
     puts "3. Load a saved game"
   end
 
+  def self.choose_color
+    puts "Please choose a color:"
+    puts "white"
+    puts "black"
+  end
+
   def self.player_input(color)
     puts "#{color.capitalize} player, pick which piece to move and where to move it!"
     puts "Type it in chess notation, (ex: nf5) to move the knight to F5. Type 'OO' to short-castle, and 'OOO' to long-castle."
     puts "You can just type the target for pawns (ex: d2) or type the column/row of the piece to move (ex: nbd2)"
+  end
+
+  def self.computer_move
+    puts "The computer is thinking..."
+    sleep(0.5)
   end
 
   def self.display_board(board)

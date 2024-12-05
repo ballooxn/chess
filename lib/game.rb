@@ -3,6 +3,7 @@ require_relative "pieces/piece"
 require_relative "pieces/piece_moves"
 require_relative "player"
 require_relative "referee"
+require_relative "engine"
 require_relative "utilities/castling"
 require_relative "utilities/data_manager"
 
@@ -17,14 +18,14 @@ class Game
                       "r" => "rook" }.freeze
 
   def initialize(board = nil)
-    @player1 = Player.new("white")
-    @player2 = Player.new("black")
-
-    @winner = false
-
     @board = board.nil? ? setup_board : board
 
+    @player1 = nil
+    @player2 = nil
+
     @referee = Referee.new(@board)
+
+    @winner = false
 
     @num_moves = 0
   end
@@ -40,8 +41,22 @@ class Game
     case response
     when "1"
       game_loop
+      response = nil
+      until %w[black white].include?(response)
+        Display.choose_color
+        response = gets.chomp
+      end
+      @player1 = Player.new(response)
+      @player2 = Player.new(response == "white" ? "black" : "white")
     when "2"
-      play_against_computer
+      response = nil
+      until %w[black white].include?(response)
+        Display.choose_color
+        response = gets.chomp
+      end
+      @player1 = Player.new(response)
+      @player2 = Engine.new(response == "white" ? "black" : "white", @referee)
+      game_loop
     when "3"
       start_saved_game
     end
@@ -64,27 +79,37 @@ class Game
 
       curr_plr = curr_plr == @player2 ? @player1 : @player2
 
-      input = curr_plr.player_input(@referee, @board)
-      if input[0].is_a?(Array) # We are castling.
-        p input
-        move_piece(input[0][0], input[0][1]) # Move king
-        move_piece(input[1][0], input[1][1]) # Move rook
-      elsif input == "save"
-        save_game(@board, @player1, @player2, Piece.pieces, @num_moves)
-      else
-        piece_to_move = input[0]
-        target = input[1]
-
-        promote_pawn(piece_to_move) if piece_to_move.piece_name == "pawn" && Piece.promoting_pawn?(piece_to_move)
-
-        move_piece(piece_to_move, target)
+      case curr_plr
+      when Player
+        input = curr_plr.player_input(@referee, @board)
+      when Engine
+        input = curr_plr.choose_move
       end
+      interpret_input(input)
 
       Display.display_board(@board)
 
       @winner = @referee.check_winner(curr_plr)
     end
     end_game
+  end
+
+  # Determines what to do with the input.
+  def interpret_input(input)
+    p input
+    if input[0].is_a?(Array) # We are castling.
+      move_piece(input[0][0], input[0][1]) # Move king
+      move_piece(input[1][0], input[1][1]) # Move rook
+    elsif input == "save"
+      save_game(@board, @player1, @player2, Piece.pieces, @num_moves)
+    else
+      piece_to_move = input[0]
+      target = input[1]
+
+      promote_pawn(piece_to_move) if piece_to_move.piece_name == "pawn" && Piece.promoting_pawn?(piece_to_move)
+
+      move_piece(piece_to_move, target)
+    end
   end
 
   def end_game
